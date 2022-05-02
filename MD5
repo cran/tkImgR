@@ -1,0 +1,14 @@
+90cae0752fed4360e3db1dabad53abc5 *DESCRIPTION
+2bd9da0eb8870e84bdd03dd95c9190b9 *NAMESPACE
+c44c50ba08cfa867088e89743c745860 *R/functions.R
+932c5169b44e57ba5f1beb0c40a62b42 *R/tkcanvasCommands.R
+b7f477085352f615abfa3d57ea606bd5 *R/tkimageCommands.R
+1a8ec6dd347f495e622a39a8f5a81cd0 *R/zzz.R
+7a674d6ef51006e139d690cdd794f26e *inst/img/example.jpg
+17a6be5adea8e504c16c3fa51f842033 *inst/img/example.png
+ddad5d5a7f2a08d6acf630639ab6c529 *inst/tcl/autoscroll.tcl
+0e9de24ec64d611f46a296995e9fd53c *man/tkImShow.Rd
+6d14bd2c89de377a6c17b4d4e2479683 *man/tkcanvasCommands.Rd
+8e34a88795885e8f7a5adf46836b5c22 *man/tkimageCommands.Rd
+8c58384f89ca8cadc6484d7b032225f8 *tests/testthat.R
+b8738937c39e670ed85f4d9286a9dc3c *tests/testthat/testthat.R
