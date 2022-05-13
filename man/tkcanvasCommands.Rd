@@ -1,3 +1,4 @@
+
 \name{canvasAddBinds}
 \alias{canvasAddBinds}
 \alias{canvasControlButton4}
@@ -76,8 +77,32 @@ Functions to zoom and pan the canvas, and add the bind to the canvas.
 These functions define the keyboard and mouse controls for the toplevel window.
 }
 \examples{
-\dontrun{
+\dontshow{
+file_path <- system.file("img", "example.png", package = "tkImgR")
+tt <- tkImShow(file_path)
+Sys.sleep(0.25)
+canvasLeft(tt)
+Sys.sleep(0.25)
+canvasControlLeft(tt)
+Sys.sleep(0.25)
+canvasControlUp(tt)
+Sys.sleep(0.25)
+zoomFactorprevious <- tt$env$zoomFactorCurrent
+.zoomUp(tt)
+Sys.sleep(0.25)
+.zoomUp(tt)
 
+zoomFactorCurrent <- tt$env$zoomFactorCurrent
+Sys.sleep(0.25)
+canvasControlRight(tt)
+Sys.sleep(0.25)
+.zoomDown(tt)
+Sys.sleep(0.25)
+.zoomDown(tt)
+Sys.sleep(0.25)
+tcltk::tkdestroy(tt)
+}
+\dontrun{
 file_path <- system.file("img", "example.png", package = "tkImgR")
 tt <- tkImShow(file_path)
 Sys.sleep(0.25)

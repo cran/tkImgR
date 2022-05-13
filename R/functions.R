@@ -15,19 +15,27 @@
 #' @return The \code{tkwin} object returned by \code{tkImShow} is a toplevel window with a canvas that contains several variables (canvasAllowZoom, canvasScrollWidth) and \code{tkwin} objects (canvas, canvasScrollHorizontal, canvasScrollVertical) placed in the \code{env}, which could be used to implement further methods.
 #' @examples
 #' \dontshow{
+#' library(testthat)
 #' file_path <- system.file("img", "example.png", package = "tkImgR")
 #' tt <- tkImShow(file_path)
+#' expect_equal(class(tt), "tkwin")
 #' Sys.sleep(0.25)
 #' canvasLeft(tt)
 #' Sys.sleep(0.25)
 #' canvasControlLeft(tt)
+#' expect_true(tkImgR:::.tkCanvasX(tt$env$canvas) < 10)
 #' Sys.sleep(0.25)
-#' canvasRight(tt)
+#' canvasControlUp(tt)
+#' expect_true(tkImgR:::.tkCanvasY(tt$env$canvas) < 10)
 #' Sys.sleep(0.25)
+#' zoomFactorprevious <- tt$env$zoomFactorCurrent
 #' .zoomUp(tt)
 #' Sys.sleep(0.25)
 #' .zoomUp(tt)
+#' zoomFactorCurrent <- tt$env$zoomFactorCurrent
 #' Sys.sleep(0.25)
+#' expect_true(zoomFactorCurrent > zoomFactorprevious)
+#'
 #' canvasControlRight(tt)
 #' Sys.sleep(0.25)
 #' .zoomDown(tt)
@@ -35,12 +43,22 @@
 #' .zoomDown(tt)
 #' Sys.sleep(0.25)
 #' tcltk::tkdestroy(tt)
+#'
+#' if (!identical(tcltk::tclRequire("Img", warn = FALSE),FALSE)){
+#' file_path1 <- system.file("img", "example.jpg", package = "tkImgR")
+#' tt <- tkImShow(file_path1)
+#' Sys.sleep(0.25)
+#' tcltk::tkdestroy(tt)
 #' }
-#' \dontrun{
-#' file_path <- system.file("img", "example.png", package = "tkImgR")
-#' tt <- tkImShow(file_path)
 #' }
 #'
+#' file_path <- system.file("img", "example.png", package = "tkImgR")
+#' tt <- tkImShow(file_path)
+#'
+#' if (!identical(tcltk::tclRequire("Img", warn = FALSE),FALSE)){
+#' file_path1 <- system.file("img", "example.jpg", package = "tkImgR")
+#' tt <- tkImShow(file_path1)
+#' }
 #' @export
 tkImShow <- function(file,
                      zoom = NULL,
@@ -298,7 +316,7 @@ tkImShow <- function(file,
   } else {
     .canvasDown(W)
   }
-  .canvasFill(W)
+  #.canvasFill(W)
 }
 
 #'
@@ -876,12 +894,58 @@ tkImShow <- function(file,
 #'
 #' @keywords internal
 .tkmaximize <- function(win) {
-  sysname <- Sys.info()[1]
-  if (sysname == "Linux") {
-    .Tcl(paste("wm attributes", win, "-zoomed 1"))
-  } else {
-    .Tcl(paste("wm state", win, "zoomed"))
-  }
+  switch(Sys.info()[1],
+         Darwin = {
+           .Tcl(paste("wm state", win, "normal"))
+           tkDim <- .tkDim()
+           tcl("wm",
+               "geometry",
+               win,
+               paste0(
+                 round(tkDim[1] * 0.75),
+                 "x",
+                 round(tkDim[2] * 0.75),
+                 "+",
+                 round(tkDim[1] / 8),
+                 "+",
+                 round(tkDim[2] / 8)
+               ))
+         },
+         Windows = {
+           tkDim <- .tkDim()
+           tcl("wm",
+               "geometry",
+               win,
+               paste0(
+                 round(tkDim[1] * 0.75),
+                 "x",
+                 round(tkDim[2] * 0.75),
+                 "+",
+                 round(tkDim[1] / 8),
+                 "+",
+                 round(tkDim[2] / 8)
+               ))
+           .Tcl("update idletask")
+           .Tcl(paste("wm state", win, "zoomed"))
+           },
+         Linux = {
+           tkDim <- .tkDim()
+           tcl("wm",
+               "geometry",
+               win,
+               paste0(
+                 round(tkDim[1] * 0.75),
+                 "x",
+                 round(tkDim[2] * 0.75),
+                 "+",
+                 round(tkDim[1] / 8),
+                 "+",
+                 round(tkDim[2] / 8)
+               ))
+           .Tcl("update idletask")
+           .Tcl(paste("wm attributes", win, "-zoomed 1"))
+           }
+         )
 }
 
 
@@ -919,8 +983,8 @@ tkImShow <- function(file,
     as.numeric(tcl(canvas, "xview")) * .canvasGetWidth(canvas)
   yRange <-
     as.numeric(tcl(canvas, "yview")) * .canvasGetHeight(canvas)
-  x <- .tkCanvasX0x(canvas, x)
-  y <- .tkCanvasY0y(canvas, y)
+  x <- .tkCanvasX(canvas, x)
+  y <- .tkCanvasY(canvas, y)
   all(c(x > xRange[1], x < xRange[2], y > yRange[1], y < yRange[2]))
 }
 
@@ -930,10 +994,10 @@ tkImShow <- function(file,
   tt <- .getToplevel(W)
   if (tt$env$canvasAllowZoom) {
     if (!is.null(x)) {
-      x <- .tkCanvasX0x(tt$env$canvas, x) / (tt$env$currentImageWidth)
+      x <- .tkCanvasX(tt$env$canvas, x) / (tt$env$currentImageWidth)
     }
     if (!is.null(y)) {
-      y <- .tkCanvasY0y(tt$env$canvas, y) / (tt$env$currentImageHeight)
+      y <- .tkCanvasY(tt$env$canvas, y) / (tt$env$currentImageHeight)
     }
     .canvasFillByZoomDelta(tt, delta = 1, x = x, y = y)
     # tclvalue(tt$env$canvasUpdate) <- tt$env$zoom
@@ -947,10 +1011,10 @@ tkImShow <- function(file,
   tt <- .getToplevel(W)
   if (tt$env$canvasAllowZoom) {
     if (!is.null(x)) {
-      x <- .tkCanvasX0x(tt$env$canvas, x) / (tt$env$currentImageWidth)
+      x <- .tkCanvasX(tt$env$canvas, x) / (tt$env$currentImageWidth)
     }
     if (!is.null(y)) {
-      y <- .tkCanvasY0y(tt$env$canvas, y) / (tt$env$currentImageHeight)
+      y <- .tkCanvasY(tt$env$canvas, y) / (tt$env$currentImageHeight)
     }
     .canvasFillByZoomDelta(tt, delta = -1, x = x, y = y)
     # tclvalue(tt$env$canvasUpdate) <- tt$env$zoom
@@ -965,14 +1029,14 @@ tkImShow <- function(file,
 
 #'
 #' @keywords internal
-.tkCanvasX0x <- function(canvas, x) {
-  as.numeric(tclvalue(tkcanvasx(canvas, x)))
+.tkCanvasX <- function(canvas, x = 0, gridspacing = NULL) {
+  as.numeric(tclvalue(tkcanvasx(canvas, x, gridspacing)))
 }
 
 #'
 #' @keywords internal
-.tkCanvasY0y <- function(canvas, y) {
-  as.numeric(tclvalue(tkcanvasy(canvas, y)))
+.tkCanvasY <- function(canvas, y = 0, gridspacing = NULL) {
+  as.numeric(tclvalue(tkcanvasy(canvas, y, gridspacing)))
 }
 
 #'

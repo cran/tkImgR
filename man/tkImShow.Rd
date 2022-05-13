@@ -1,3 +1,4 @@
+
 \name{tkImShow}
 \alias{tkImShow}
 \title{Open and Display Image in a Tk Canvas}
@@ -19,19 +20,27 @@ Open and display an image in a canvas that can be zoomed and panned using the mo
 }
 \examples{
 \dontshow{
+library(testthat)
 file_path <- system.file("img", "example.png", package = "tkImgR")
 tt <- tkImShow(file_path)
+expect_equal(class(tt), "tkwin")
 Sys.sleep(0.25)
 canvasLeft(tt)
 Sys.sleep(0.25)
 canvasControlLeft(tt)
+expect_true(tkImgR:::.tkCanvasX(tt$env$canvas) < 10)
 Sys.sleep(0.25)
-canvasRight(tt)
+canvasControlUp(tt)
+expect_true(tkImgR:::.tkCanvasY(tt$env$canvas) < 10)
 Sys.sleep(0.25)
+zoomFactorprevious <- tt$env$zoomFactorCurrent
 .zoomUp(tt)
 Sys.sleep(0.25)
 .zoomUp(tt)
+zoomFactorCurrent <- tt$env$zoomFactorCurrent
 Sys.sleep(0.25)
+expect_true(zoomFactorCurrent > zoomFactorprevious)
+
 canvasControlRight(tt)
 Sys.sleep(0.25)
 .zoomDown(tt)
@@ -39,10 +48,20 @@ Sys.sleep(0.25)
 .zoomDown(tt)
 Sys.sleep(0.25)
 tcltk::tkdestroy(tt)
+
+if (!identical(tcltk::tclRequire("Img", warn = FALSE),FALSE)){
+file_path1 <- system.file("img", "example.jpg", package = "tkImgR")
+tt <- tkImShow(file_path1)
+Sys.sleep(0.25)
+tcltk::tkdestroy(tt)
 }
-\dontrun{
-file_path <- system.file("img", "example.png", package = "tkImgR")
-tt <- tkImShow(file_path)
 }
 
+file_path <- system.file("img", "example.png", package = "tkImgR")
+tt <- tkImShow(file_path)
+
+if (!identical(tcltk::tclRequire("Img", warn = FALSE),FALSE)){
+file_path1 <- system.file("img", "example.jpg", package = "tkImgR")
+tt <- tkImShow(file_path1)
+}
 }

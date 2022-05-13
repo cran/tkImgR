@@ -38,7 +38,7 @@
 
   if (identical(didLoad, FALSE)) {
     packageStartupMessage(
-      "The tk Img extension cannot be loaded. Please install the tk 'Img' package to support JPG, TIFF, BMP and CR2 formats"
+      "The Tk 'Img' extension cannot be loaded. Please install Tk 'Img' to support JPG, TIFF, BMP, and CR2 formats"
     )
   }
 }
